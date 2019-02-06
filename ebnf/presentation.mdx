@@ -1,0 +1,163 @@
+export { code as theme } from 'mdx-deck/themes'
+import { components } from "mdx-deck-code-surfer";
+import { Appear } from 'mdx-deck'
+
+Creating a DSL
+==============
+
+```notes
+
+Why create a DSL?
+
+- If your content contains behavior
+- If you want to seperate the content creation
+  process from the code and release processes
+
+This talk will be an overview of ingredients
+
+```
+
+---
+
+How can you create a DSL?
+=========================
+
+1. Defining the language
+2. Creating a parser
+3. The AST
+4. Creating an IDE
+
+---
+
+Defining the language
+=====================
+
+```notes
+
+* The code you wish you had
+* EBNF - Describes the syntax of a language
+* Multiple standards -> ISO/IEC 14977
+* Inspiration from http://bottlecaps.de/rr/ui
+
+```
+
+---
+
+Example syntax, EBNF
+====================
+
+```ebnf
+(* Comment *)
+definition = "terminal" | non terminal, sequence | choice;
+non terminal = ( "terminal", ? special sequence ? ) | { repetition } | [ optional ];
+```
+
+---
+
+Creating a parser
+=================
+
+```notes
+* YACC - Yet another compiler compiler
+* Bison / Jison
+```
+
+---
+import { CodeSurfer } from "mdx-deck-code-surfer";
+import nightOwl from "prism-react-renderer/themes/nightOwl"
+
+<CodeSurfer
+  code={require("raw-loader!./ebnf.jison")}
+  title="Syntax definition"
+  theme={nightOwl}
+  steps={[
+    { range: [1, 13], notes: "Defining tokens" },
+    { range: [37, 42], notes: "Defining preference" },
+    { range: [44, 58], notes: "Defining AST conversion" },
+    { range: [66, 85], notes: "Defining AST conversion" }
+  ]}
+  showNumbers
+/>
+
+---
+
+Abstract Syntax tree
+====================
+
+<Appear>
+  <h2>Easy to traverse (It's just JSON)</h2>
+  <h2>Verification</h2>
+  <h2>Optimisation / Transformation</h2>
+</Appear>
+
+
+---
+
+Input:
+
+```ebnf
+(* Comment line *)
+root = nice | alternative;
+nice = "literal", extra;
+```
+
+Output (AST)
+
+```JSON
+[
+  { "comment": " Comment line " },
+  { "identifier": "root",
+    "definition": {
+      "choice": [ { "nonTerminal": "nice" }, { "nonTerminal": "alternative" } ]
+    }, "location": 2
+  },
+  {
+    "identifier": "nice",
+    "definition": {
+      "sequence": [ { "terminal": "literal" }, { "nonTerminal": "extra" } ]
+    }, "location": 3
+  }
+]
+```
+
+---
+
+Integrated Development Environment
+==================================
+
+<Appear>
+  <h2>Syntax highlighting</h2>
+  <h2>Error / Validation reporting</h2>
+  <h2>Code Completion</h2>
+  <h2>Custom keyboard commands</h2>
+</Appear>
+
+---
+
+Demo
+====
+
+https://github.com/matthijsgroen/ebnf2railroad
+
+---
+
+Next time...
+============
+
+- A real project using this technology
+  - Type systems
+  - Auto generate everything (from your DSL)
+  - Testing the dynamic nature of a DSL
+
+- Topics to do a deep dive into: ...
+  - Structure of a compiler
+  - micropass/nanopass compilers
+  - AST transformations
+  - Desugaring
+
+---
+
+Thanks!
+=======
+
+https://github.com/matthijsgroen/ebnf2railroad

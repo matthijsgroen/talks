@@ -1,0 +1,19 @@
+{
+  "name": "talks",
+  "version": "1.0.0",
+  "description": "mdx presentations",
+  "main": "index.js",
+  "author": "Matthijs Groen <matthijs.groen@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "mdx-deck ebnf/presentation.mdx"
+  },
+  "dependencies": {
+    "mdx-deck": "^1.7.14"
+  },
+  "devDependencies": {
+    "mdx-deck-code-surfer": "^0.5.5",
+    "raw-loader": "^1.0.0"
+  }
+}
