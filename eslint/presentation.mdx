@@ -1,0 +1,49 @@
+import { components } from "mdx-deck-code-surfer"
+import { withCodeSurfer } from "mdx-deck-kabisa-theme"
+import { CodeSurfer } from "mdx-deck-code-surfer";
+export const theme = withCodeSurfer(CodeSurfer)
+
+ES Lint
+==============
+
+```notes
+
+Why create a DSL?
+
+- If your content contains behavior
+- If you want to seperate the content creation
+  process from the code and release processes
+
+This talk will be an overview of ingredients
+
+```
+
+---
+
+
+```javascript How can you create a DSL?
+  var foo = "bar";
+  var baz = "bar";
+  var foo = "bar";
+  var foo = "bar";
+----
+1 > Hallo
+2:3[2,5] > Bits!
+```
+
+---
+
+How can you create a DSL?
+=========================
+
+1. Defining the language
+2. Creating a parser
+3. The AST
+4. Creating an IDE
+
+---
+
+Thanks!
+=======
+
+https://github.com/matthijsgroen/ebnf2railroad
