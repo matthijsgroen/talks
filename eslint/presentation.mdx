@@ -3,47 +3,252 @@ import { withCodeSurfer } from "mdx-deck-kabisa-theme"
 import { CodeSurfer } from "mdx-deck-code-surfer";
 export const theme = withCodeSurfer(CodeSurfer)
 
-ES Lint
-==============
+# ESLint
+
+---
+## It is a validator for the spanish language 🇪🇸
+---
+
+# ESLint is a linting tool for EcmaScript
+
+where you can define your own rules of what you consider to be "good" code.
 
 ```notes
 
-Why create a DSL?
+What is ESLint.
 
-- If your content contains behavior
-- If you want to seperate the content creation
-  process from the code and release processes
+ESLint is a linting tool for EcmaScript, where you can define your own
+rules of what you consider to be "good" code.
 
-This talk will be an overview of ingredients
+This can vary from project to project. Therefor ESLint can be configured
+to act differently for each project.
 
 ```
 
 ---
 
+Configuration
 
-```javascript How can you create a DSL?
-  var foo = "bar";
-  var baz = "bar";
-  var foo = "bar";
-  var foo = "bar";
+1. get plugin
+2. enable / configure rule from that plugin
+
+or
+
+- Enable a full config from a plugin
+
+---
+
+```javascript ESLint config
+"eslintConfig": {
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-eval": ["error", {"allowIndirect": true}], // default is false
+    "no-undef": "error"
+  }
+}
 ----
-1 > Hallo
-2:3[2,5] > Bits!
+* > Full config
+4 > Rule config to disallow 'eval()'
+5 > Rule config to disallow 'b = 10'
+2 > Default set of rules that you can extend
 ```
 
 ---
 
-How can you create a DSL?
-=========================
+# Example
 
-1. Defining the language
-2. Creating a parser
-3. The AST
-4. Creating an IDE
+```javascript
+b = 10;
+
+eval("b = 12");
+```
+
+```sh
+$ eslint code.js
+
+code.js
+  1:1   error  'b' is not defined   no-undef
+  3:1   error  eval can be harmful  no-eval
+
+✖ 2 problems (2 errors, 0 warnings)
+```
 
 ---
 
-Thanks!
-=======
+# no-restricted-syntax
 
-https://github.com/matthijsgroen/ebnf2railroad
+---
+
+```javascript No empty catch blocks
+"eslintConfig": {
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "message": "No empty catch blocks!",
+        "selector": "CatchClause > BlockStatement[body.length=0]"
+      }
+    ]
+  }
+}
+----
+7 > No empty catch blocks
+8 > Selector in EcmaScript AST
+```
+
+---
+
+```javascript Expect error reporter to be called
+"eslintconfig": {
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "message": "Missing error reporting in catch block",
+        "selector": "CatchClause > :not(CallExpression[callee.name=\\\"logError\\\"])"
+      }
+    ]
+  }
+}
+----
+7 > No empty catch blocks
+8 > Selector in EcmaScript AST
+```
+
+---
+
+- How to discover the AST of a specific piece of code?
+- How to use an AST selector?
+
+https://eslint.org/docs/rules/no-restricted-syntax
+
+---
+
+# Limits of no-restricted-syntax
+
+```javascript
+const fibonacci = n => (n < 2 ? 1 : fibonacci(n - 1) + fibonacci(n - 2));
+```
+
+---
+
+# Creating a plugin
+
+```sh
+$ yo eslint:plugin
+$ yo eslint:rule
+```
+
+---
+
+```javascript Rule contents
+module.exports = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "No self reference",
+      category: "FP",
+      recommended: false
+    },
+    fixable: null, // or "code" or "whitespace"
+    schema: [
+      // fill in your schema
+    ]
+  },
+
+  create: function(context) {
+    return {
+      CallExpression: node => {
+        const identifier = node.callee.name;
+        let parent = node.parent;
+        let found = false;
+        while (parent && !found) {
+          found =
+            parent.type === "VariableDeclarator" &&
+            parent.id.name === identifier;
+          parent = parent.parent;
+        }
+        if (found) {
+          context.report({
+            node,
+            message: "Not allowed to self reference: {{ identifier }}",
+            data: {
+              identifier
+            }
+          });
+        }
+      }
+    };
+  }
+};
+----
+* > full code
+2:13 > meta info
+15:42 > meta info
+17 > Select single node type
+18 > Grab the name of the function that is called
+19:26 > Walk upwards in the AST
+27:35 > Busted!
+```
+
+---
+
+```javascript Tests
+var ruleTester = new RuleTester();
+ruleTester.run("fp-challenge", rule, {
+  invalid: [
+    {
+      code: "const fib = n => n <= 1 ? 1 : fib(n - 1) + fib(n - 2);",
+      parserOptions: { ecmaVersion: 6 },
+      errors: [
+        {
+          message: "Not allowed to self reference: fib",
+          type: "CallExpression"
+        },
+        {
+          message: "Not allowed to self reference: fib",
+          type: "CallExpression"
+        }
+      ]
+    }
+  ],
+
+  valid: [
+    {
+      code: "const Y = f => (x => x(x))(y => f(x => y(y)(x)));",
+      parserOptions: { ecmaVersion: 6 }
+    }
+  ]
+});
+----
+1:17 > Fibonacci use case
+6 > Don't forget to use the proper parser for your example code!
+```
+
+---
+
+## Liked
+
+- No-restricted-syntax is awesome
+- Plugin creation is easy
+- Documentation on ESLint site is really good
+  (including the search)
+
+## Gotcha
+
+- Keep in mind differences in parsing (ES5, Babel, etc) when
+  creating/testing plugins
+
+---
+
+# Thanks!
+
+- https://eslint.org/
+- https://eslint.org/docs/rules/no-restricted-syntax
+- https://eslint.org/docs/developer-guide/selectors
+- https://eslint.org/parser/
+- https://github.com/eslint/generator-eslint
+- https://github.com/matthijsgroen/eslint-plugin-fp-challenge
+
